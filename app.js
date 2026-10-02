@@ -8,6 +8,7 @@
   // sets: { id, date: 'JJJJ-MM-TT', exercise, weight, reps, ts }
   // body: { id, date, kg }
   // durations: { id, date, seconds }  (Dauer eines Trainingstags)
+  // runs: { id, date, km, seconds, ts }  (ein Lauf; mehrere pro Tag möglich)
   // timer: { start: Millisekunden } oder null, solange ein Training läuft
   let data = load();
 
@@ -20,11 +21,12 @@
           sets: Array.isArray(d.sets) ? d.sets : [],
           body: Array.isArray(d.body) ? d.body : [],
           durations: Array.isArray(d.durations) ? d.durations : [],
+          runs: Array.isArray(d.runs) ? d.runs : [],
           timer: d.timer && Number.isFinite(d.timer.start) ? { start: d.timer.start } : null
         };
       }
     } catch (e) { /* nicht lesbar: leer starten */ }
-    return { sets: [], body: [], durations: [], timer: null };
+    return { sets: [], body: [], durations: [], runs: [], timer: null };
   }
 
   function save() {
@@ -88,6 +90,7 @@
     if (name === 'home') renderHome();
     if (name === 'training') { renderTraining(); renderTimer(); }
     if (name === 'verlauf') renderVerlauf();
+    if (name === 'laufen') renderRuns();
     if (name === 'koerper') renderBody();
 
     const page = $('tab-' + name);
@@ -118,6 +121,7 @@
   });
 
   $('last-card').addEventListener('click', () => openTraining(lastTrainingDate() || todayStr()));
+  $('run-card').addEventListener('click', () => go('laufen'));
 
   $('back').addEventListener('click', () => {
     if (history.state && history.state.tab) history.back();
@@ -140,7 +144,11 @@
     const latest = data.body.slice().sort((a, b) => (a.date < b.date ? -1 : 1)).pop();
     $('home-body').textContent = latest ? `${fmtNum(latest.kg)} kg` : '';
 
+    const lastRun = latestRun();
+    $('home-run').textContent = lastRun ? `${fmtNum(lastRun.km)} km` : '';
+
     renderLast();
+    renderLastRun();
   }
 
   // ---------- Karte: letztes Training ----------
@@ -215,6 +223,143 @@
       rows.append(row);
     });
   }
+
+  // ---------- Läufe ----------
+  const byRunOrder = (a, b) => (a.date === b.date ? a.ts - b.ts : (a.date < b.date ? -1 : 1));
+
+  function latestRun() {
+    return data.runs.slice().sort(byRunOrder).pop() || null;
+  }
+
+  // 341 Sekunden pro km -> "5:41"
+  function fmtPace(secPerKm) {
+    const total = Math.round(secPerKm);
+    return `${Math.floor(total / 60)}:${pad(total % 60)}`;
+  }
+
+  const paceOf = r => r.seconds / r.km;
+
+  function renderLastRun() {
+    const stats = $('run-stats');
+    const rows = $('run-ex');
+    stats.replaceChildren();
+    rows.replaceChildren();
+
+    const run = latestRun();
+    if (!run) {
+      $('run-title').textContent = 'Noch kein Lauf';
+      $('run-sub').textContent = 'Tippe hier, um den ersten Lauf einzutragen.';
+      return;
+    }
+
+    const [y, m, d] = run.date.split('-').map(Number);
+    $('run-title').textContent = new Date(y, m - 1, d).toLocaleDateString('de-DE', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    });
+    const ago = dayNumber(todayStr()) - dayNumber(run.date);
+    $('run-sub').textContent = ago === 0 ? 'heute' : ago === 1 ? 'gestern' : ago > 1 ? `vor ${ago} Tagen` : '';
+
+    [
+      ['km', fmtNum(run.km), 'Kilometer'],
+      ['dur', clock(run.seconds * 1000), run.seconds >= 3600 ? 'Stunden' : 'Minuten'],
+      ['pace', fmtPace(paceOf(run)), 'min/km']
+    ].forEach(([cls, value, label]) => {
+      const stat = el('span', 'stat');
+      stat.append(el('span', 'stat-value ' + cls, value), el('span', 'stat-label', label));
+      stats.append(stat);
+    });
+
+    // Vergleich mit dem Lauf davor
+    const all = data.runs.slice().sort(byRunOrder);
+    const prev = all[all.indexOf(run) - 1];
+    if (!prev) return;
+
+    const kmDiff = Math.round((run.km - prev.km) * 100) / 100;
+    const paceDiff = Math.round(paceOf(run) - paceOf(prev)); // negativ = schneller
+
+    const kmTrend = el('span', 'trend', kmDiff > 0 ? `+${fmtNum(kmDiff)} km` : kmDiff < 0 ? `−${fmtNum(-kmDiff)} km` : 'gleich');
+    if (kmDiff > 0) kmTrend.classList.add('up');
+    const paceTrend = el('span', 'trend',
+      paceDiff < 0 ? `${-paceDiff} s/km schneller` : paceDiff > 0 ? `${paceDiff} s/km langsamer` : 'gleich');
+    if (paceDiff < 0) paceTrend.classList.add('up');
+
+    [['Distanz', kmTrend], ['Pace', paceTrend]].forEach(([name, trend]) => {
+      const right = el('span', 'dash-right');
+      right.append(trend);
+      const row = el('span', 'dash-row');
+      row.append(el('span', 'dash-name', name), right);
+      rows.append(row);
+    });
+  }
+
+  // Seite "Laufen": Liste und Diagramm
+  function renderRuns() {
+    const sorted = data.runs.slice().sort(byRunOrder);
+
+    drawChart($('run-chart'), sorted.slice(-20).map(r => ({ date: r.date, y: r.km })), {
+      type: 'bar', theme: 'train', label: 'Letzter Lauf', unit: 'km', aria: 'Distanz pro Lauf'
+    });
+
+    const list = $('run-list');
+    list.replaceChildren();
+    sorted.slice().reverse().forEach(r => {
+      const item = el('div', 'item');
+      item.append(el('span', null, `${fmtDate(r.date)} · ${fmtNum(r.km)} km`));
+      item.append(el('span', 'item-side', `${clock(r.seconds * 1000)} · ${fmtPace(paceOf(r))}/km`));
+      const del = el('button', 'del', '✕');
+      del.type = 'button';
+      del.setAttribute('aria-label', 'Lauf löschen');
+      del.addEventListener('click', () => {
+        if (confirm('Diesen Lauf löschen?')) {
+          data.runs = data.runs.filter(x => x.id !== r.id);
+          save();
+          renderRuns();
+        }
+      });
+      item.append(del);
+      list.append(item);
+    });
+  }
+
+  // Eingabe: Minuten und Sekunden -> Sekunden; leere Sekunden zählen als 0
+  function runSeconds() {
+    const min = parseInt($('run-min').value, 10);
+    const secText = $('run-sec').value.trim();
+    const sec = secText === '' ? 0 : parseInt(secText, 10);
+    if (!(min >= 0) || !(sec >= 0 && sec <= 59)) return NaN;
+    return min * 60 + sec;
+  }
+
+  // zeigt die Pace schon beim Tippen
+  function updateRunPace() {
+    const hint = $('run-pace');
+    const km = parseNum($('run-km').value);
+    const seconds = runSeconds();
+    if (km > 0 && seconds > 0) {
+      hint.textContent = `Pace: ${fmtPace(seconds / km)} min/km`;
+      hint.hidden = false;
+    } else {
+      hint.hidden = true;
+    }
+  }
+
+  ['run-km', 'run-min', 'run-sec'].forEach(id => $(id).addEventListener('input', updateRunPace));
+
+  $('run-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = $('run-date').value;
+    const km = parseNum($('run-km').value);
+    const seconds = runSeconds();
+    if (!date || !(km > 0 && km <= 500) || !(seconds > 0 && seconds <= 86400)) {
+      alert('Bitte Datum, Distanz (über 0 bis 500 km) und eine Zeit (Sekunden von 0 bis 59) prüfen.');
+      return;
+    }
+    data.runs.push({ id: uid(), date, km, seconds, ts: Date.now() });
+    save();
+    ['run-km', 'run-min', 'run-sec'].forEach(id => { $(id).value = ''; });
+    updateRunPace();
+    renderRuns();
+  });
 
   // ---------- Timer und Trainingsdauer ----------
   let tickId = null;
@@ -633,7 +778,7 @@
     function draw() {
       const i = sel === null ? n - 1 : sel;
       lab.textContent = sel === null ? opts.label : 'Ausgewählt';
-      val.replaceChildren(document.createTextNode(fmtNum(pts[i].y)), el('span', 'readout-unit', ' kg'));
+      val.replaceChildren(document.createTextNode(fmtNum(pts[i].y)), el('span', 'readout-unit', ' ' + (opts.unit || 'kg')));
       dat.textContent = fmtDate(pts[i].date);
 
       svg.replaceChildren();
@@ -741,6 +886,14 @@
     return { id: typeof x.id === 'string' && x.id ? x.id : uid(), date: x.date, seconds };
   }
 
+  function cleanRun(r) {
+    if (!r || !isDate(r.date)) return null;
+    const km = Number(r.km);
+    const seconds = Math.round(Number(r.seconds));
+    if (!(km > 0 && km <= 500) || !(seconds > 0 && seconds <= 86400)) return null;
+    return { id: typeof r.id === 'string' && r.id ? r.id : uid(), date: r.date, km, seconds, ts: Number(r.ts) || 0 };
+  }
+
   function cleanBody(b) {
     if (!b || !isDate(b.date)) return null;
     const kg = Number(b.kg);
@@ -757,6 +910,10 @@
       const body = (Array.isArray(d.body) ? d.body : []).map(cleanBody).filter(Boolean);
       const durations = (Array.isArray(d.durations) ? d.durations : []).map(cleanDuration).filter(Boolean);
 
+      const runs = (Array.isArray(d.runs) ? d.runs : []).map(cleanRun).filter(Boolean);
+      const haveRuns = new Set(data.runs.map(r => r.id));
+      const newRuns = runs.filter(r => !haveRuns.has(r.id));
+
       const haveSets = new Set(data.sets.map(s => s.id));
       const haveDays = new Set(data.body.map(b => b.date));
       const newSets = sets.filter(s => !haveSets.has(s.id));
@@ -767,10 +924,12 @@
       data.sets.push(...newSets);
       data.body.push(...newBody);
       data.durations.push(...newDurations);
+      data.runs.push(...newRuns);
       save();
       const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-      msg(`${pl(newSets.length, 'Satz', 'Sätze')}, ${pl(newBody.length, 'Körpergewicht', 'Körpergewichte')} ` +
-        `und ${pl(newDurations.length, 'Trainingsdauer', 'Trainingsdauern')} hinzugefügt.`);
+      msg(`${pl(newSets.length, 'Satz', 'Sätze')}, ${pl(newBody.length, 'Körpergewicht', 'Körpergewichte')}, ` +
+        `${pl(newDurations.length, 'Trainingsdauer', 'Trainingsdauern')} ` +
+        `und ${pl(newRuns.length, 'Lauf', 'Läufe')} hinzugefügt.`);
     } catch (err) {
       msg('Die Datei konnte nicht gelesen werden.');
     }
@@ -780,6 +939,7 @@
   // ---------- Start ----------
   $('set-date').value = todayStr();
   $('body-date').value = todayStr();
+  $('run-date').value = todayStr();
   renderHome();
   renderTimer(); // läuft ein Training noch, geht die Uhr weiter
 

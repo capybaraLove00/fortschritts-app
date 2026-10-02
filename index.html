@@ -17,7 +17,8 @@
 <!-- Symbole -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-train" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></symbol>
+  <symbol id="i-run" viewBox="0 0 24 24"><path d="M4 18c3.5 0 4-4 8-4s4.5-5 8-5"/><circle cx="19.5" cy="5.5" r="1.5"/></symbol>
+  <symbol id="i-chart"viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></symbol>
   <symbol id="i-body" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 10.5a4.5 4.5 0 0 1 7 0"/><path d="M12 10.5l1.8-1.8"/></symbol>
   <symbol id="i-data" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
@@ -52,11 +53,30 @@
       <span class="dash-ex" id="last-ex"></span>
     </button>
 
+    <button type="button" id="run-card" class="dash">
+      <span class="dash-head">
+        <span class="dash-text">
+          <span class="dash-label">Letzter Lauf</span>
+          <span class="dash-title" id="run-title"></span>
+          <span class="dash-sub" id="run-sub"></span>
+        </span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </span>
+      <span class="dash-stats" id="run-stats"></span>
+      <span class="dash-ex" id="run-ex"></span>
+    </button>
+
     <div class="list">
       <button type="button" class="row" data-go="training">
         <span class="badge b-green"><svg class="ico" aria-hidden="true"><use href="#i-train"/></svg></span>
         <span class="row-title">Training</span>
         <span class="row-detail" id="home-training"></span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+      <button type="button" class="row" data-go="laufen">
+        <span class="badge b-purple"><svg class="ico" aria-hidden="true"><use href="#i-run"/></svg></span>
+        <span class="row-title">Laufen</span>
+        <span class="row-detail" id="home-run"></span>
         <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
       </button>
       <button type="button" class="row" data-go="verlauf">
@@ -120,6 +140,33 @@
     <h2 id="day-title">Sätze</h2>
     <div id="day-dur" class="group"></div>
     <div id="day-sets"></div>
+  </section>
+
+  <!-- Laufen -->
+  <section id="tab-laufen" class="tab" hidden>
+    <h1>Laufen</h1>
+    <form id="run-form" class="panel" autocomplete="off">
+      <label>Datum
+        <input type="date" id="run-date" required>
+      </label>
+      <label>Distanz (km)
+        <input type="text" id="run-km" class="big" inputmode="decimal" placeholder="5,2" required>
+      </label>
+      <div class="row2">
+        <label>Minuten
+          <input type="number" id="run-min" class="big" inputmode="numeric" min="0" step="1" placeholder="28" required>
+        </label>
+        <label>Sekunden
+          <input type="number" id="run-sec" class="big" inputmode="numeric" min="0" max="59" step="1" placeholder="30">
+        </label>
+      </div>
+      <p id="run-pace" class="hint" hidden></p>
+      <button type="submit" class="primary">Lauf speichern</button>
+    </form>
+    <h2>Distanz pro Lauf (km)</h2>
+    <div id="run-chart" class="chart"></div>
+    <h2>Alle Läufe</h2>
+    <div id="run-list"></div>
   </section>
 
   <!-- Verlauf: Graph pro Übung -->

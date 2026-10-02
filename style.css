@@ -17,6 +17,7 @@
   --glass-shadow: rgba(0, 0, 0, 0.12);
   --c-body: #0a7fb5;
   --c-dur: #c25100;
+  --c-run: #8944ab;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,6 +37,7 @@
     --glass-shadow: rgba(0, 0, 0, 0.5);
     --c-body: #32c8ff;
     --c-dur: #ff9f0a;
+    --c-run: #bf5af2;
   }
 }
 
@@ -160,7 +162,8 @@ input[type="date"] {
   min-width: 0;
   max-width: 100%;
   min-height: 56px;
-  line-height: 56px;
+  display: flex;
+  align-items: center;
   text-align: left;
   overflow: hidden;
 }
@@ -275,6 +278,7 @@ button.primary.stop { background: var(--danger); color: var(--danger-text); }
 .b-green { background: #34c759; }
 .b-blue { background: #0a84ff; }
 .b-orange { background: #ff9500; }
+.b-purple { background: #af52de; }
 .b-gray { background: #8e8e93; }
 .badge .ico { width: 22px; height: 22px; }
 
@@ -292,6 +296,7 @@ button.primary.stop { background: var(--danger); color: var(--danger-text); }
 }
 .dash:active { background: var(--field); }
 .dash + .list { margin-top: 16px; }
+.dash + .dash { margin-top: 16px; }
 .dash-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .dash-text { display: block; min-width: 0; }
 .dash-label { display: block; color: var(--muted); font-size: 15px; font-weight: 600; }
@@ -304,6 +309,8 @@ button.primary.stop { background: var(--danger); color: var(--danger-text); }
 .stat-value.ex { color: var(--c-body); }
 .stat-value.sets { color: var(--accent); }
 .stat-value.dur { color: var(--c-dur); }
+.stat-value.km { color: var(--c-run); }
+.stat-value.pace { color: var(--accent); }
 .stat-label { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
 .dash-ex { display: block; margin-top: 14px; }
 .dash-row {
@@ -322,6 +329,7 @@ button.primary.stop { background: var(--danger); color: var(--danger-text); }
 /* Listen mit Trennlinien */
 .group,
 #verlauf-list,
+#run-list,
 #body-list {
   background: var(--card);
   border-radius: 22px;
@@ -342,6 +350,7 @@ button.primary.stop { background: var(--danger); color: var(--danger-text); }
   font-size: 18px;
 }
 .item:first-child { border-top: 0; }
+.item-side { margin-left: auto; color: var(--muted); font-size: 15px; text-align: right; }
 
 .item .del {
   background: none;
