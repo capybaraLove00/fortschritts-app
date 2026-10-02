@@ -1,0 +1,375 @@
+/* Design im Stil von iOS 27 (Liquid Glass): Glas nur für Bedienelemente,
+   Inhalt ruhig auf gruppierten Flächen. */
+
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --field: #f2f2f7;
+  --text: #000000;
+  --muted: #6c6c70;
+  --sep: rgba(60, 60, 67, 0.18);
+  --accent: #248a3d;
+  --accent-text: #ffffff;
+  --danger: #d70015;
+  --danger-text: #ffffff;
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.7);
+  --glass-shadow: rgba(0, 0, 0, 0.12);
+  --c-body: #0a7fb5;
+  --c-dur: #c25100;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --field: #2c2c2e;
+    --text: #ffffff;
+    --muted: #98989d;
+    --sep: rgba(84, 84, 88, 0.55);
+    --accent: #30d158;
+    --accent-text: #00200a;
+    --danger: #ff453a;
+    --danger-text: #2b0000;
+    --glass: rgba(60, 60, 64, 0.55);
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+    --c-body: #32c8ff;
+    --c-dur: #ff9f0a;
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px 16px calc(40px + env(safe-area-inset-bottom));
+}
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Überschriften */
+h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: 8px 4px 20px;
+}
+h2 {
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin: 28px 4px 10px;
+}
+.subtitle { margin: 12px 4px 0; color: var(--muted); font-size: 17px; }
+
+/* Glas: schwebende Bedienelemente */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 6px 20px var(--glass-shadow);
+}
+
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px 6px;
+  pointer-events: none;
+}
+
+.back {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 0 18px 0 10px;
+  border-radius: 24px;
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ico {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+/* Gruppierte Fläche für Formulare */
+.panel {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 18px;
+}
+
+label {
+  display: block;
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+input, select {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin-top: 6px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 20px; /* verhindert Zoomen auf dem iPhone */
+  color: var(--text);
+  background: var(--field);
+  border: 0;
+  border-radius: 16px;
+}
+
+input.big {
+  height: 72px;
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+input[type="file"] { height: auto; padding: 14px 16px; font-size: 16px; }
+
+.row2 { display: flex; gap: 12px; }
+.row2 label { flex: 1; min-width: 0; }
+
+button { font: inherit; cursor: pointer; }
+
+button.primary {
+  display: block;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: 0;
+  border-radius: 29px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+button.primary:active { transform: scale(0.98); }
+
+.hint { color: var(--muted); font-size: 16px; margin: 0 0 14px; }
+.file-label { margin: 22px 0 0; }
+
+/* Timer */
+.timer { margin-bottom: 16px; }
+.timer-label { color: var(--muted); font-size: 15px; font-weight: 600; }
+.timer-value {
+  color: var(--c-dur);
+  font-size: 56px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.timer-since { color: var(--muted); font-size: 15px; margin-bottom: 14px; }
+button.primary.stop { background: var(--danger); color: var(--danger-text); }
+.link {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+.dur-right { display: flex; align-items: center; gap: 14px; }
+.linkbtn {
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Startbildschirm: Liste wie in den iOS-Einstellungen */
+.list {
+  background: var(--card);
+  border-radius: 22px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 16px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--sep);
+  color: var(--text);
+  text-align: left;
+  font-size: 20px;
+}
+.row:first-child { border-top: 0; }
+.row:active { background: var(--field); }
+.row-title { flex: 1; font-weight: 500; }
+.row-detail { color: var(--muted); font-size: 17px; }
+.chev { width: 20px; height: 20px; color: var(--muted); }
+
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #ffffff;
+  flex: none;
+}
+.b-green { background: #34c759; }
+.b-blue { background: #0a84ff; }
+.b-orange { background: #ff9500; }
+.b-gray { background: #8e8e93; }
+.badge .ico { width: 22px; height: 22px; }
+
+/* Karte: letztes Training */
+.dash {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 18px;
+  text-align: left;
+  color: var(--text);
+  background: var(--card);
+  border: 0;
+  border-radius: 22px;
+}
+.dash:active { background: var(--field); }
+.dash + .list { margin-top: 16px; }
+.dash-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dash-text { display: block; min-width: 0; }
+.dash-label { display: block; color: var(--muted); font-size: 15px; font-weight: 600; }
+.dash-title { display: block; margin-top: 2px; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.dash-sub { display: block; color: var(--muted); font-size: 15px; }
+.dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+.dash-stats:empty, .dash-ex:empty { display: none; }
+.stat { display: block; min-width: 0; }
+.stat-value { display: block; font-size: 30px; line-height: 1.1; font-weight: 600; letter-spacing: -0.02em; }
+.stat-value.ex { color: var(--c-body); }
+.stat-value.sets { color: var(--accent); }
+.stat-value.dur { color: var(--c-dur); }
+.stat-label { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
+.dash-ex { display: block; margin-top: 14px; }
+.dash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--sep);
+}
+.dash-name { min-width: 0; font-size: 17px; font-weight: 500; }
+.dash-right { display: flex; flex: none; flex-direction: column; align-items: flex-end; font-size: 16px; text-align: right; }
+.trend { color: var(--muted); font-size: 14px; }
+.trend.up { color: var(--accent); font-weight: 600; }
+
+/* Listen mit Trennlinien */
+.group,
+#verlauf-list,
+#body-list {
+  background: var(--card);
+  border-radius: 22px;
+  overflow: hidden;
+}
+.group { margin-bottom: 16px; }
+
+.group-title { padding: 16px 18px 8px; font-weight: 600; font-size: 19px; }
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--sep);
+  font-size: 18px;
+}
+.item:first-child { border-top: 0; }
+
+.item .del {
+  background: none;
+  border: 0;
+  color: var(--danger);
+  font-size: 22px;
+  min-width: 48px;
+  min-height: 48px;
+  margin: -8px -10px -8px 0;
+}
+
+/* Diagramme: Training = abgerundete Balken mit Raster, Körpergewicht = Linie im Stil der Apple-Fitness-App */
+.chart {
+  --c: var(--accent);
+  background: var(--card);
+  border-radius: 22px;
+  padding: 18px 16px 10px;
+}
+.chart[data-theme="train"] { --c: var(--accent); }
+.chart[data-theme="train"] .readout-value { color: var(--text); font-size: 40px; font-weight: 700; }
+.chart[data-theme="train"] .readout-unit { color: var(--muted); font-size: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.chart[data-theme="body"] { --c: var(--c-body); }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart .empty { color: var(--muted); padding: 36px 8px; text-align: center; }
+
+.readout { padding: 0 2px 12px; }
+.readout-label { color: var(--muted); font-size: 15px; font-weight: 600; }
+.readout-value { color: var(--c); font-size: 42px; line-height: 1.1; font-weight: 600; letter-spacing: -0.02em; }
+.readout-unit { color: var(--c); font-size: 18px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+.readout-date { color: var(--muted); font-size: 15px; margin-top: 2px; }
+
+.bar { fill: var(--c); transition: opacity 0.15s; }
+.bar.dim { opacity: 0.35; }
+
+.baseline { stroke: var(--sep); stroke-width: 1.5; }
+.grid { stroke: var(--sep); stroke-width: 1; stroke-dasharray: 2 5; }
+.tick-label { fill: var(--muted); font-size: 13px; }
+.line { fill: none; stroke: var(--c); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.dot { fill: var(--c); stroke: var(--card); stroke-width: 2.5; }
+.marker { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; }
+
+/* Wechsel zwischen Seiten */
+.tab.enter { animation: slide-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab.enter { animation: none; }
+  button.primary:active { transform: none; }
+}
+
+[hidden] { display: none !important; }

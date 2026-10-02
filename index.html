@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fortschritt</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fortschritt">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Symbole -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-train" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></symbol>
+  <symbol id="i-body" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 10.5a4.5 4.5 0 0 1 7 0"/><path d="M12 10.5l1.8-1.8"/></symbol>
+  <symbol id="i-data" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+</svg>
+
+<!-- Schwebender Zurück-Button (nur auf Unterseiten) -->
+<div id="topbar" hidden>
+  <button type="button" id="back" class="glass back">
+    <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>
+    <span>Zurück</span>
+  </button>
+</div>
+
+<main>
+
+  <!-- Start -->
+  <section id="tab-home" class="tab">
+    <p id="home-date" class="subtitle"></p>
+    <h1>Fortschritt</h1>
+
+    <button type="button" id="last-card" class="dash">
+      <span class="dash-head">
+        <span class="dash-text">
+          <span class="dash-label">Letztes Training</span>
+          <span class="dash-title" id="last-title"></span>
+          <span class="dash-sub" id="last-sub"></span>
+        </span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </span>
+      <span class="dash-stats" id="last-stats"></span>
+      <span class="dash-ex" id="last-ex"></span>
+    </button>
+
+    <div class="list">
+      <button type="button" class="row" data-go="training">
+        <span class="badge b-green"><svg class="ico" aria-hidden="true"><use href="#i-train"/></svg></span>
+        <span class="row-title">Training</span>
+        <span class="row-detail" id="home-training"></span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+      <button type="button" class="row" data-go="verlauf">
+        <span class="badge b-blue"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
+        <span class="row-title">Verlauf</span>
+        <span class="row-detail" id="home-verlauf"></span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+      <button type="button" class="row" data-go="koerper">
+        <span class="badge b-orange"><svg class="ico" aria-hidden="true"><use href="#i-body"/></svg></span>
+        <span class="row-title">Körpergewicht</span>
+        <span class="row-detail" id="home-body"></span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+      <button type="button" class="row" data-go="daten">
+        <span class="badge b-gray"><svg class="ico" aria-hidden="true"><use href="#i-data"/></svg></span>
+        <span class="row-title">Daten</span>
+        <span class="row-detail"></span>
+        <svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Training: Sätze eintragen -->
+  <section id="tab-training" class="tab" hidden>
+    <h1>Training</h1>
+
+    <div class="panel timer" id="timer-panel">
+      <div id="timer-idle">
+        <button type="button" id="timer-start" class="primary">Training starten</button>
+      </div>
+      <div id="timer-run" hidden>
+        <div class="timer-label">Training läuft</div>
+        <div class="timer-value" id="timer-value">0:00</div>
+        <div class="timer-since" id="timer-since"></div>
+        <button type="button" id="timer-stop" class="primary stop">Training beenden</button>
+        <button type="button" id="timer-cancel" class="link">Verwerfen</button>
+      </div>
+    </div>
+
+    <form id="set-form" class="panel" autocomplete="off">
+      <label>Datum
+        <input type="date" id="set-date" required>
+      </label>
+      <label>Übung
+        <input type="text" id="set-exercise" list="exercise-list" placeholder="z. B. Bankdrücken" required>
+        <datalist id="exercise-list"></datalist>
+      </label>
+      <p id="last-hint" class="hint" hidden></p>
+      <div class="row2">
+        <label>Gewicht (kg)
+          <input type="text" id="set-weight" class="big" inputmode="decimal" placeholder="80" required>
+        </label>
+        <label>Wiederholungen
+          <input type="number" id="set-reps" class="big" inputmode="numeric" min="1" step="1" placeholder="8" required>
+        </label>
+      </div>
+      <button type="submit" class="primary">Satz speichern</button>
+    </form>
+
+    <h2 id="day-title">Sätze</h2>
+    <div id="day-dur" class="group"></div>
+    <div id="day-sets"></div>
+  </section>
+
+  <!-- Verlauf: Graph pro Übung -->
+  <section id="tab-verlauf" class="tab" hidden>
+    <h1>Verlauf</h1>
+    <p id="verlauf-empty" class="hint" hidden>Noch keine Sätze eingetragen.</p>
+    <div id="verlauf-content">
+      <div class="panel">
+        <label>Übung
+          <select id="verlauf-exercise"></select>
+        </label>
+        <p id="verlauf-stats" class="hint"></p>
+      </div>
+      <h2>Top-Gewicht pro Training (kg)</h2>
+      <div id="verlauf-chart" class="chart"></div>
+      <h2>Alle Trainings</h2>
+      <div id="verlauf-list"></div>
+    </div>
+  </section>
+
+  <!-- Körpergewicht -->
+  <section id="tab-koerper" class="tab" hidden>
+    <h1>Körpergewicht</h1>
+    <form id="body-form" class="panel" autocomplete="off">
+      <div class="row2">
+        <label>Datum
+          <input type="date" id="body-date" required>
+        </label>
+        <label>Gewicht (kg)
+          <input type="text" id="body-weight" class="big" inputmode="decimal" placeholder="82,5" required>
+        </label>
+      </div>
+      <button type="submit" class="primary">Speichern</button>
+    </form>
+    <h2>Verlauf (kg)</h2>
+    <div id="body-chart" class="chart"></div>
+    <h2>Einträge</h2>
+    <div id="body-list"></div>
+  </section>
+
+  <!-- Daten: Export / Import -->
+  <section id="tab-daten" class="tab" hidden>
+    <h1>Daten</h1>
+    <div class="panel">
+      <p class="hint">Alles liegt nur in diesem Browser auf diesem Gerät. Exportiere regelmäßig ein Backup.</p>
+      <button type="button" id="export-btn" class="primary">Backup exportieren</button>
+      <label class="file-label">Backup importieren (fügt hinzu, überschreibt nichts)
+        <input type="file" id="import-file" accept="application/json,.json">
+      </label>
+      <p id="data-msg" class="hint"></p>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
