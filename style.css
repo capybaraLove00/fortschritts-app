@@ -153,6 +153,28 @@ input.big {
   letter-spacing: -0.01em;
 }
 
+/* Datumsfeld: iOS-Safari zeichnet es sonst breiter und mit versetztem Text */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 56px;
+  line-height: 56px;
+  text-align: left;
+  overflow: hidden;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.2em;
+  margin: 0;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+  line-height: normal;
+}
+
 input[type="file"] { height: auto; padding: 14px 16px; font-size: 16px; }
 
 .row2 { display: flex; gap: 12px; }
